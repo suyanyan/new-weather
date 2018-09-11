@@ -1,0 +1,135 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+        body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+        table{
+            border-collapse: collapse;
+            display: none;
+        }
+        td{
+            border: 1px solid #ccc;
+            text-align: center;
+            height: 30px;
+            line-height: 30px;
+        }
+    </style>
+    <title>手机/QQ号吉凶查询</title>
+</head>
+<body>
+<div class="phone">
+    <div class="input" style="margin:20px 0">
+        <lable>请输入手机号码:</lable>
+        <input type="text" id="phone">
+        <div class="msg" style="color: red;font-size: 12px;margin-left: 117px"></div>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <td width="10%">主人个性</td>
+            <td width="10%">具体表现</td>
+            <td width="10%">城市</td>
+            <td width="10%">吉凶分析</td>
+            <td width="10%">吉凶</td>
+            <td width="10%">数理分数</td>
+            <td width="10%">手机号</td>
+            <td width="10%">手机号码运营商</td>
+            <td width="10%">手机号码类型</td>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<div class="qq">
+    <div class="input" style="margin:20px 0">
+        <lable>请输入QQ号码:</lable>
+        <input type="text" id="qq">
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <td width="10%">主人个性</td>
+                <td width="10%">具体表现</td>
+                <td width="10%">吉凶分析</td>
+                <td width="10%">吉凶</td>
+                <td width="10%">数理分数</td>
+                <td width="10%">QQ号</td>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<div class="Recharge">
+    <input type="text" placeholder="充值手机号" id="RechargeIphon">
+    <input type="text" placeholder="充值金额" id="RechargeNum">
+    <button id="btn">提交</button>
+    <div class="msg" style="color: red;font-size: 12px;margin-left: 117px"></div>
+</div>
+</body>
+</html>
+<script src="js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+   $("#phone").blur(function () {
+       var reg = /^1[0-9]{10}$/;
+       var value = $(this).val();
+       if(!value)return;
+       if(!reg.test(value)){
+           $(".msg").html('手机号格式不正确，请重新输入!!!');
+           return;
+       }else{
+           $(".msg").html('');
+       }
+      $.ajax({
+          url:'http://api.jisuapi.com/mobileluck/query?mobile='+ value + '&appkey=7bd1c82d3c3e9ecd',
+          dataType:'jsonp',
+          success:function (r) {
+              var data = r.result;
+              if(data != null || data != ''){
+                  $(' .phone table').css('display','block')
+              }else{
+                  return
+              }
+              var str = `<tr><td>${data.character}</td><td>${data.characterdetail}</td><td>${data.city}</td><td>${data.content}</td><td>${data.luck}</td><td>${data.score}</td><td>${data.mobile}</td><td>${data.company}</td><td>${data.cardtype}</td></tr>`;
+              $(".phone tbody").html(str)
+          }
+      })
+   });
+
+   $("#qq").blur(function () {
+       var qqVal = $(this).val();
+       if(!qqVal)return;
+       $.ajax({
+           url:'http://api.jisuapi.com/qqluck/query?qq=' + qqVal + '&appkey=7bd1c82d3c3e9ecd',
+           dataType:'jsonp',
+           success:function(r){
+               var data = r.result;
+               if(data != null || data != ''){
+                   $('.qq tbody').css('display','block');
+               }else{
+                   return;
+               }
+               var str = `<tr><td>${data.character}</td><td>${data.characterdetail}</td><td>${data.content}</td><td>${data.luck}</td><td>${data.score}</td><td>${data.qq}</td></tr>`;
+               $('.qq tbody').html(str);
+           }
+       })
+   });
+
+    $("#btn").click(function () {
+        var phone = $("#RechargeIphon").val();
+        var Num = $("#RechargeNum").val();
+        if(!phone && !Num)return;
+        $.ajax({
+            url:'http://api.jisuapi.com/mobilerecharge/recharge?appkey=7bd1c82d3c3e9ecd&mobile='+ phone + ' &amount=' + Num + '&outorderno=&sign=asdfsadfccsddwwww',
+            dataType:'jsonp',
+            method:'post',
+            success:function (r) {
+                $(".Recharge .msg").html(r.msg)
+                console.log(r)
+            }
+        })
+    })
+
+</script>

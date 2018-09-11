@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>三级联动+天气预报</title>
+    <style>
+        select {
+            width: 150px;
+        }
+
+        h2 {
+            font-size: 14px;
+            background: #eae5e5;
+            height: 30px;
+            line-height: 30px;
+        }
+
+        li {
+            list-style: none;
+        }
+        table{
+            border-collapse:collapse;
+        }
+        table.t1{
+            width: 100%;
+        }
+        td{
+            height: 30px;
+            text-align: center;
+            /*width: 15%;*/
+        }
+
+        table.datas-content td{
+            border: 1px solid #000;
+        }
+        table.t1 td{
+            border: 1px solid #ccc;
+        }
+        table.datas-content th{
+            border: 1px solid #000;
+        }
+        table.t1 th{
+            border: 1px solid #ccc;
+        }
+        tr{
+            width: 100%;
+            height: 30px;
+        }
+
+        th{
+            height: 30px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+<div id="Three-leve-linkage">
+    <select name="province" id="province">
+        <option value="0">--请选择省份--</option>
+    </select>
+    <select name="city" id="city">
+        <option value="0"> --请选择城市--</option>
+    </select>
+    <select name="area" id="area">
+        <option value=""> --请选择区--</option>
+    </select>
+</div>
+<div id="weater">
+    <div id="area-name" style="margin-top: 10px;"><span>地区：</span><span class="area-name"></span></div>
+    <div class="today">
+        <h2>今天的天气情况</h2>
+        <span class="week" style="margin-right: 5px"></span>
+        <span class="data" style="margin-right: 20px"></span>
+        <select name="" id="data">
+            <option value="0">请选择某一时间段</option>
+        </select>
+        <ul class="data-content">
+            <li id="w1">
+                <div class="imgbox"></div>
+                <div class="time"></div>
+                <div class="tem"></div>
+                <div class="wind"></div>
+
+            </li>
+
+        </ul>
+    </div>
+    <div class="next-seven-days">
+        <h2>未来七天的天气情况</h2>
+        <table class="datas-content" cellspacing="10" cellpadding="10">
+            <thead>
+                <tr>
+                    <th width="10%">日期</th>
+                    <th width="10%">时间</th>
+                    <th width="20%">白天</th>
+                    <th width="20%">晚上</th>
+                    <th width="10%">指数</th>
+                    <th width="10%">强度</th>
+                    <th width="20%">提醒</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+<script src="js/jquery-1.10.2.min.js"></script>
+<script>
+   // 获取当前城市
+   $.ajax({
+       url:'http://whois.pconline.com.cn/ipJson.jsp',
+       dataType:'jsonp',
+       success:function (res) {
+           console.log(res);
+           getweater(res.city);
+       }
+   });
+    //获取天气
+    function getweater(city) {
+        $(".area-name").html(city);
+        $.ajax({
+            url: 'http://api.jisuapi.com/weather/query?appkey=7bd1c82d3c3e9ecd&city=' + city,
+            dataType: 'jsonp',
+            success: function (res) {
+                console.log(res);
+                var Tdata = res.result;
+                // var today = ``;
+                $(".imgbox").html(`<img src="weathercn/${Tdata.img}.png" alt="">`);
+                $(".week").html(`${Tdata.week}`);
+                $(".data").html(`${Tdata.date}`);
+                $(".time").html(`&nbsp;&nbsp;&nbsp; ${Tdata.updatetime}`)
+                $(".tem").html(`<span>${Tdata.templow}℃ ～ ${Tdata.temphigh}℃</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>${Tdata.weather}</span>`);
+                $(".wind").html(`<span>${Tdata.winddirect} ${Tdata.windpower}</span>`)
+                var Ndata = res.result.daily;
+                var nextSevenDays = ``;
+                Ndata.forEach(function (val,index) {
+                    nextSevenDays += `<tr>
+                        <td>${val.date} &nbsp;&nbsp;&nbsp;${val.week}</td>
+                        <td>${val.sunset}</td>
+                        <td>
+                            <table class="t1">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>最高气温</th>
+                                        <th>天气</th>
+                                        <th>风力风向</th>
+                                    </tr>
+
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><img src="weathercn/${val.day.img}.png" alt=""></td>
+                                        <td>${val.day.temphigh}℃</td>
+                                        <td>${val.day.weather}</td>
+                                        <td>${val.day.winddirect}--${val.day.windpower}</td>
+
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td>
+                             <table class="t1">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>最低气温</th>
+                                        <th>天气</th>
+                                        <th>风力风向</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><img src="weathercn/${val.night.img}.png" alt=""></td>
+                                        <td>${val.night.templow}℃</td>
+                                        <td>${val.night.weather}</td>
+                                        <td>${val.night.winddirect}--${val.night.windpower}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td>${res.result.index[index].iname}</td>
+                        <td>${res.result.index[index].ivalue}</td>
+                        <td>${res.result.index[index].detail}</td>
+                </tr>`
+                });
+                $(".datas-content tbody").html(nextSevenDays);
+            }
+        })
+    }
+
+   $("#data").one('focus',function () {
+       $.ajax({
+           url: 'http://api.jisuapi.com/weather/query?appkey=7bd1c82d3c3e9ecd&city=太原市',
+           dataType: 'jsonp',
+           success:function (res) {
+               var data = res.result.hourly;
+               var time = '<option value="0">请选择某一时间段</option>'
+               data.forEach(function (val) {
+                   time += `<option>${val.time}</option>`
+               })
+              $("#data").html(time)
+           }
+       })
+   });
+
+   $("#data").change(function () {
+       var item = $(this).val();
+      $.ajax({
+          url: 'http://api.jisuapi.com/weather/query?appkey=7bd1c82d3c3e9ecd&city=太原市',
+          dataType: 'jsonp',
+          success:function (res) {
+              var data = res.result.hourly;
+              data.forEach(function (val) {
+                 if(val.time == item){
+                     $(".imgbox").html(`<img src="weathercn/${val.img}.png" alt="">`);
+                     $(".time").html(`${val.time}`);
+                     $(".tem").html(`<span>${val.temp}℃</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>${val.weather}</span>`);
+                 }
+              })
+          }
+      })
+   });
+
+    //省
+   $("#province").one('focus', function () {
+        $.ajax({
+            url: 'http://api.jisuapi.com/area/province?appkey=7bd1c82d3c3e9ecd',
+            dataType: 'jsonp',
+            success: function (res) {
+                var provinceData = "<option value=\"0\">--请选择省份--</option>";
+                var Pdata = res.result;
+                Pdata.forEach(function (val) {
+                    provinceData += `<option value="${val.id}">${val.name}</option>`
+                })
+                $("#province").html(provinceData);
+            }
+        })
+    })
+
+    //市
+    $("#province").change(function () {
+        var provinceId = $(this).val();
+        if (provinceId == 0) return;
+        $.ajax({
+            url: 'http://api.jisuapi.com/weather/city?appkey=7bd1c82d3c3e9ecd',
+            dataType: 'jsonp',
+            success: function (res) {
+                console.log(res)
+                var Cdata = res.result;
+                var cityData = '<option value="0"> --请选择城市--</option>';
+                Cdata.forEach(function (val) {
+                    if (val.parentid == provinceId) {
+                        cityData += `<option value="${val.cityid}">${val.city}</option>`
+                    }
+                });
+                $("#city").html(cityData);
+            }
+        })
+    });
+
+    //区
+    $("#city").change(function () {
+        var cityId = $(this).val();
+        if (cityId == 0) return;
+        $.ajax({
+            url: 'http://api.jisuapi.com/weather/city?appkey=7bd1c82d3c3e9ecd',
+            dataType: 'jsonp',
+            success: function (res) {
+                var Adata = res.result;
+                var areaData = '<option value=""> --请选择区--</option>';
+                Adata.forEach(function (val) {
+                    if (val.parentid == cityId) {
+                        areaData += `<option>${val.city}</option>`
+                    }
+                });
+                $("#area").html(areaData)
+            }
+        })
+    });
+    $("#area").change(function () {
+        getweater($(this).val());
+    })
+</script>
+</html>
